@@ -44,9 +44,7 @@ namespace netDxf.Blocks
         #region delegates and events
 
         public delegate void LayerChangedEventHandler(Block sender, TableObjectChangedEventArgs<Layer> e);
-
         public event LayerChangedEventHandler LayerChanged;
-
         protected virtual Layer OnLayerChangedEvent(Layer oldLayer, Layer newLayer)
         {
             LayerChangedEventHandler ae = this.LayerChanged;
@@ -60,9 +58,7 @@ namespace netDxf.Blocks
         }
 
         public delegate void EntityAddedEventHandler(Block sender, BlockEntityChangeEventArgs e);
-
         public event EntityAddedEventHandler EntityAdded;
-
         protected virtual void OnEntityAddedEvent(EntityObject item)
         {
             EntityAddedEventHandler ae = this.EntityAdded;
@@ -73,9 +69,7 @@ namespace netDxf.Blocks
         }
 
         public delegate void EntityRemovedEventHandler(Block sender, BlockEntityChangeEventArgs e);
-
         public event EntityRemovedEventHandler EntityRemoved;
-
         protected virtual void OnEntityRemovedEvent(EntityObject item)
         {
             EntityRemovedEventHandler ae = this.EntityRemoved;
@@ -86,9 +80,7 @@ namespace netDxf.Blocks
         }
 
         public delegate void AttributeDefinitionAddedEventHandler(Block sender, BlockAttributeDefinitionChangeEventArgs e);
-
         public event AttributeDefinitionAddedEventHandler AttributeDefinitionAdded;
-
         protected virtual void OnAttributeDefinitionAddedEvent(AttributeDefinition item)
         {
             AttributeDefinitionAddedEventHandler ae = this.AttributeDefinitionAdded;
@@ -99,9 +91,7 @@ namespace netDxf.Blocks
         }
 
         public delegate void AttributeDefinitionRemovedEventHandler(Block sender, BlockAttributeDefinitionChangeEventArgs e);
-
         public event AttributeDefinitionRemovedEventHandler AttributeDefinitionRemoved;
-
         protected virtual void OnAttributeDefinitionRemovedEvent(AttributeDefinition item)
         {
             AttributeDefinitionRemovedEventHandler ae = this.AttributeDefinitionRemoved;

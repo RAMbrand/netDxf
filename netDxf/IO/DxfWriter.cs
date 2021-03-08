@@ -1950,7 +1950,7 @@ namespace netDxf.IO
                     this.WriteLeader((Leader) entity);
                     break;
                 case EntityType.LwPolyline:
-                    this.WriteLightWeightPolyline((LwPolyline) entity);
+                    this.WriteLwPolyline((LwPolyline) entity);
                     break;
                 case EntityType.Line:
                     this.WriteLine((Line) entity);
@@ -2749,7 +2749,7 @@ namespace netDxf.IO
             this.WriteXData(xline.XData);
         }
 
-        private void WriteLightWeightPolyline(LwPolyline polyline)
+        private void WriteLwPolyline(LwPolyline polyline)
         {
             this.chunk.Write(100, SubclassMarker.LwPolyline);
             this.chunk.Write(90, polyline.Vertexes.Count);
@@ -3656,7 +3656,7 @@ namespace netDxf.IO
                         break;
                     case DimensionStyleOverrideType.TextVerticalPlacement:
                         xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) 77));
-                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short)(DimensionStyleTextVerticalPlacement) styleOverride.Value));
+                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) (DimensionStyleTextVerticalPlacement) styleOverride.Value));
                         break;
                     case DimensionStyleOverrideType.TextHorizontalPlacement:
                         xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) 280));
@@ -3688,16 +3688,15 @@ namespace netDxf.IO
                         break;
                     case DimensionStyleOverrideType.FitOptions:
                         xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) 289));
-                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) styleOverride.Value));
+                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) (DimensionStyleFitOptions) styleOverride.Value));
                         break;
                     case DimensionStyleOverrideType.FitTextInside:
                         xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) 174));
-                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16,
-                            (bool) styleOverride.Value ? (short) 1 : (short) 0));
+                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (bool) styleOverride.Value ? (short) 1 : (short) 0));
                         break;
                     case DimensionStyleOverrideType.FitTextMove:
                         xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) 279));
-                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) (DimensionStyleFitOptions) styleOverride.Value));
+                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) (DimensionStyleFitTextMove) styleOverride.Value));
                         break;
                     case DimensionStyleOverrideType.AngularPrecision:
                         xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) 179));

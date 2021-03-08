@@ -220,15 +220,15 @@ namespace netDxf
 
             double sin = Math.Sin(rotation);
             double cos = Math.Cos(rotation);
-            if (from == CoordinateSystem.World && to == CoordinateSystem.Object)
+            switch (from)
             {
-                return new Vector2(point.X*cos + point.Y*sin, -point.X*sin + point.Y*cos);
+                case CoordinateSystem.World when to == CoordinateSystem.Object:
+                    return new Vector2(point.X*cos + point.Y*sin, -point.X*sin + point.Y*cos);
+                case CoordinateSystem.Object when to == CoordinateSystem.World:
+                    return new Vector2(point.X*cos - point.Y*sin, point.X*sin + point.Y*cos);
+                default:
+                    return point;
             }
-            if (from == CoordinateSystem.Object && to == CoordinateSystem.World)
-            {
-                return new Vector2(point.X*cos - point.Y*sin, point.X*sin + point.Y*cos);
-            }
-            return point;
         }
 
         /// <summary>
@@ -256,25 +256,29 @@ namespace netDxf
             double cos = Math.Cos(rotation);
 
             List<Vector2> transPoints;
-            if (from == CoordinateSystem.World && to == CoordinateSystem.Object)
+            switch (from)
             {
-                transPoints = new List<Vector2>();
-                foreach (Vector2 p in points)
+                case CoordinateSystem.World when to == CoordinateSystem.Object:
                 {
-                    transPoints.Add(new Vector2(p.X*cos + p.Y*sin, -p.X*sin + p.Y*cos));
+                    transPoints = new List<Vector2>();
+                    foreach (Vector2 p in points)
+                    {
+                        transPoints.Add(new Vector2(p.X*cos + p.Y*sin, -p.X*sin + p.Y*cos));
+                    }
+                    return transPoints;
                 }
-                return transPoints;
-            }
-            if (from == CoordinateSystem.Object && to == CoordinateSystem.World)
-            {
-                transPoints = new List<Vector2>();
-                foreach (Vector2 p in points)
+                case CoordinateSystem.Object when to == CoordinateSystem.World:
                 {
-                    transPoints.Add(new Vector2(p.X*cos - p.Y*sin, p.X*sin + p.Y*cos));
+                    transPoints = new List<Vector2>();
+                    foreach (Vector2 p in points)
+                    {
+                        transPoints.Add(new Vector2(p.X*cos - p.Y*sin, p.X*sin + p.Y*cos));
+                    }
+                    return transPoints;
                 }
-                return transPoints;
+                default:
+                    return new List<Vector2>(points);
             }
-            return new List<Vector2>(points);
         }
 
         /// <summary>
@@ -294,16 +298,16 @@ namespace netDxf
             }
 
             Matrix3 trans = ArbitraryAxis(zAxis);
-            if (from == CoordinateSystem.World && to == CoordinateSystem.Object)
+            switch (from)
             {
-                trans = trans.Transpose();
-                return trans*point;
+                case CoordinateSystem.World when to == CoordinateSystem.Object:
+                    trans = trans.Transpose();
+                    return trans*point;
+                case CoordinateSystem.Object when to == CoordinateSystem.World:
+                    return trans*point;
+                default:
+                    return point;
             }
-            if (from == CoordinateSystem.Object && to == CoordinateSystem.World)
-            {
-                return trans*point;
-            }
-            return point;
         }
 
         /// <summary>
@@ -328,26 +332,30 @@ namespace netDxf
 
             Matrix3 trans = ArbitraryAxis(zAxis);
             List<Vector3> transPoints;
-            if (from == CoordinateSystem.World && to == CoordinateSystem.Object)
+            switch (from)
             {
-                transPoints = new List<Vector3>();
-                trans = trans.Transpose();
-                foreach (Vector3 p in points)
+                case CoordinateSystem.World when to == CoordinateSystem.Object:
                 {
-                    transPoints.Add(trans*p);
+                    transPoints = new List<Vector3>();
+                    trans = trans.Transpose();
+                    foreach (Vector3 p in points)
+                    {
+                        transPoints.Add(trans*p);
+                    }
+                    return transPoints;
                 }
-                return transPoints;
-            }
-            if (from == CoordinateSystem.Object && to == CoordinateSystem.World)
-            {
-                transPoints = new List<Vector3>();
-                foreach (Vector3 p in points)
+                case CoordinateSystem.Object when to == CoordinateSystem.World:
                 {
-                    transPoints.Add(trans*p);
+                    transPoints = new List<Vector3>();
+                    foreach (Vector3 p in points)
+                    {
+                        transPoints.Add(trans*p);
+                    }
+                    return transPoints;
                 }
-                return transPoints;
+                default:
+                    return new List<Vector3>(points);
             }
-            return new List<Vector3>(points);
         }
 
         /// <summary>
@@ -504,13 +512,13 @@ namespace netDxf
             // test for parallelism.
             if (Vector2.AreParallel(dir0, dir1, threshold))
             {
-                return new Vector2(double.NaN, double.NaN);
+                return Vector2.NaN;
             }
 
             // lines are not parallel
             Vector2 v = point1 - point0;
             double cross = Vector2.CrossProduct(dir0, dir1);
-            double s = (v.X*dir1.Y - v.Y*dir1.X)/cross;
+            double s = (v.X * dir1.Y - v.Y * dir1.X) / cross;
             return point0 + s*dir0;
         }
 
@@ -523,7 +531,7 @@ namespace netDxf
         public static double NormalizeAngle(double angle)
         {
             double normalized = angle % 360.0;
-            if (IsZero(normalized))
+            if (IsZero(normalized) || IsEqual(Math.Abs(normalized), 360.0))
             {
                 return 0.0;
             }

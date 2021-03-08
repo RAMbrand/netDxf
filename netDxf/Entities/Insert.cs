@@ -138,26 +138,11 @@ namespace netDxf.Entities
         /// <param name="block">Insert block definition.</param>
         /// <param name="position">Insert <see cref="Vector3">point</see> in world coordinates.</param>
         public Insert(Block block, Vector3 position)
-            : this(block, position, 1.0)
-        {           
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <c>Insert</c> class.
-        /// </summary>
-        /// <param name="block">Insert block definition.</param>
-        /// <param name="position">Insert <see cref="Vector3">point</see> in world coordinates.</param>
-        /// <param name="scale">Insert scale.</param>
-        public Insert(Block block, Vector3 position, double scale)
             : base(EntityType.Insert, DxfObjectCode.Insert)
-        {
+        {  
             this.block = block ?? throw new ArgumentNullException(nameof(block));
             this.position = position;
-            if (MathHelper.IsZero(scale))
-            {
-                throw new ArgumentOutOfRangeException(nameof(scale), scale, "The Insert scale cannot be zero.");
-            }
-            this.scale = new Vector3(scale);
+            this.scale = new Vector3(1.0);
             this.rotation = 0.0;
             this.endSequence = new EndSequence(this);
 
@@ -282,32 +267,46 @@ namespace netDxf.Entities
         #region public methods
 
         /// <summary>
-        /// Updates the actual insert with the attribute properties currently defined in the block. This does not affect any values assigned to attributes in each block.
+        /// Updates the attribute list of the actual insert with the attribute definition list of the referenced block. This does not affect any value assigned to the Value property.
         /// </summary>
-        /// <remarks>This method will automatically call the TransformAttributes method, to keep all attributes position and orientation up to date.</remarks>
-        /// <remarks></remarks>
+        /// <remarks>
+        /// This method will automatically call the TransformAttributes method, to keep all attributes position and orientation up to date.<br />
+        /// This method will does not change the values assigned to attributes in the actual insert, besides the ones modified by the TransformAttributes() method;
+        /// position, normal, rotation, text height, width factor, oblique angle, is backwards, is upside down, and alignment values.
+        /// </remarks>
         public void Sync()
         {
-            List<Attribute> atts = new List<Attribute>(this.block.AttributeDefinitions.Count);
+            List<Attribute> atts = new List<Attribute>();
 
-            // remove all attributes in the actual insert
+            // remove all attributes that have no attribute definition in the block
             foreach (Attribute att in this.attributes)
             {
-                this.OnAttributeRemovedEvent(att);
-                att.Handle = null;
-                att.Owner = null;
+                string tag = att.Tag;
+                if (this.block.AttributeDefinitions.ContainsTag(tag))
+                {
+                    atts.Add(att);
+                }
+                else
+                {
+                    this.OnAttributeRemovedEvent(att);
+                    att.Handle = null;
+                    att.Owner = null;
+                }
             }
 
             // add any new attributes from the attribute definitions of the block
             foreach (AttributeDefinition attdef in this.block.AttributeDefinitions.Values)
             {
-                Attribute att = new Attribute(attdef)
+                if (this.attributes.AttributeWithTag(attdef.Tag) == null)
                 {
-                    Owner = this
-                };
+                    Attribute att = new Attribute(attdef)
+                    {
+                        Owner = this
+                    };
 
-                atts.Add(att);
-                this.OnAttributeAddedEvent(att);
+                    atts.Add(att);
+                    this.OnAttributeAddedEvent(att);
+                }
             }
             this.attributes = new AttributeCollection(atts);
 
@@ -359,16 +358,16 @@ namespace netDxf.Entities
         }
 
         /// <summary>
-        /// Recalculate the attributes position, normal, rotation, text height, width factor, and oblique angle from the values applied to the insertion.
+        /// Recalculate the attributes position, normal, rotation, height, width, width factor, oblique angle, backwards, and upside down properties from the transformation state of the insertion.
         /// </summary>
         /// <remarks>
-        /// Changes to the insert, the block, or the document insertion units will require this method to be called manually.<br />
+        /// Making changes to the insert position, rotation, normal, and/or scale;
+        /// when changing the block origin and/or units; or even the document insertion units will require this method to be called manually.<br />
         /// The attributes position, normal, rotation, text height, width factor, and oblique angle values includes the transformations applied to the insertion,
         /// if required this method will calculate the proper values according to the ones defined by the attribute definition.<br />
         /// All the attribute values can be changed manually independently to its definition,
         /// but, usually, you will want them to be transformed with the insert based on the local values defined by the attribute definition.<br />
-        /// This method only applies to attributes that have a definition, some DXF files might generate attributes that have no definition in the block.<br />
-        /// At the moment the attribute width factor and oblique angle are not calculated, this is applied to inserts with non uniform scaling.
+        /// This method only applies to attributes that have a definition, some DXF files might generate attributes that have no definition in the block.
         /// </remarks>
         public void TransformAttributes()
         {
@@ -386,6 +385,8 @@ namespace netDxf.Entities
                 AttributeDefinition attDef = att.Definition;
                 if (attDef == null)
                 {
+                    // do not modify attributes with no attribute definition.
+                    // They will need to be handle manually
                     continue;
                 }
 
@@ -616,12 +617,18 @@ namespace netDxf.Entities
         /// </summary>
         /// <param name="transformation">Transformation matrix.</param>
         /// <param name="translation">Translation vector.</param>
-        /// <remarks>Matrix3 adopts the convention of using column vectors to represent a transformation matrix.</remarks>
+        /// <remarks>
+        /// Matrix3 adopts the convention of using column vectors to represent a transformation matrix.<br />
+        /// The transformation will also be applied to the insert attributes.
+        /// </remarks>
         public override void TransformBy(Matrix3 transformation, Vector3 translation)
         {
             Vector3 newPosition = transformation * this.Position + translation;
             Vector3 newNormal = transformation * this.Normal;
-            if (Vector3.Equals(Vector3.Zero, newNormal)) newNormal = this.Normal;
+            if (Vector3.Equals(Vector3.Zero, newNormal))
+            {
+                newNormal = this.Normal;
+            }
 
             Matrix3 transOW = MathHelper.ArbitraryAxis(this.Normal);
             transOW *= Matrix3.RotationZ(this.Rotation * MathHelper.DegToRad);
@@ -649,7 +656,10 @@ namespace netDxf.Entities
             this.Scale = newScale;
             this.Rotation = newRotation;
 
-            this.TransformAttributes();
+            foreach (Attribute att in this.attributes)
+            {
+                att.TransformBy(transformation, translation);
+            }
         }
 
         /// <summary>

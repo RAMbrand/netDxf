@@ -30,6 +30,7 @@ using netDxf.Header;
 using netDxf.IO;
 using netDxf.Objects;
 using netDxf.Tables;
+using netDxf.Units;
 using Attribute = netDxf.Entities.Attribute;
 
 namespace netDxf
@@ -852,8 +853,16 @@ namespace netDxf
                     Insert insert = (Insert)entity;
                     insert.Block = this.blocks.Add(insert.Block, assignHandle);
                     this.blocks.References[insert.Block.Name].Add(insert);
+                    //DrawingUnits insUnits = this.DrawingVariables.InsUnits;
+                    //double docScale = UnitHelper.ConversionFactor(insert.Block.Record.Units, insUnits);
                     foreach (Attribute attribute in insert.Attributes)
                     {
+                        //if (assignHandle && attribute.Definition != null)
+                        //{
+                        //    attribute.Height = docScale * attribute.Definition.Height;
+                        //    attribute.Position = docScale * attribute.Definition.Position + insert.Position - insert.Block.Origin;
+                        //}
+
                         attribute.Layer = this.layers.Add(attribute.Layer, assignHandle);
                         this.layers.References[attribute.Layer.Name].Add(attribute);
                         attribute.LayerChanged += this.Entity_LayerChanged;
@@ -971,6 +980,8 @@ namespace netDxf
 
             entity.LayerChanged += this.Entity_LayerChanged;
             entity.LinetypeChanged += this.Entity_LinetypeChanged;
+
+            
         }
 
         internal void AddAttributeDefinitionToDocument(AttributeDefinition attDef, bool assignHandle)
@@ -1590,7 +1601,7 @@ namespace netDxf
 
             e.Item.Linetype = this.linetypes.Add(e.Item.Linetype);
             this.linetypes.References[e.Item.Linetype.Name].Add(e.Item);
-            e.Item.LinetypeChanged -= this.Entity_LinetypeChanged;
+            e.Item.LinetypeChanged += this.Entity_LinetypeChanged;
 
             e.Item.Style = this.textStyles.Add(e.Item.Style);
             this.textStyles.References[e.Item.Style.Name].Add(e.Item);
@@ -1600,13 +1611,13 @@ namespace netDxf
         private void Insert_AttributeRemoved(Insert sender, AttributeChangeEventArgs e)
         {
             this.layers.References[e.Item.Layer.Name].Remove(e.Item);
-            e.Item.LayerChanged += this.Entity_LayerChanged;
+            e.Item.LayerChanged -= this.Entity_LayerChanged;
 
             this.linetypes.References[e.Item.Linetype.Name].Remove(e.Item);
             e.Item.LinetypeChanged -= this.Entity_LinetypeChanged;
 
             this.textStyles.References[e.Item.Style.Name].Remove(e.Item);
-            e.Item.TextStyleChanged += this.Entity_TextStyleChanged;
+            e.Item.TextStyleChanged -= this.Entity_TextStyleChanged;
         }
 
         //private void Insert_BlockChanged(Insert sender, TableObjectChangedEventArgs<Block> e)

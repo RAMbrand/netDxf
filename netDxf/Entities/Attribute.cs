@@ -104,7 +104,7 @@ namespace netDxf.Entities
         private Vector3 normal;
 
         private AttributeDefinition definition;
-        private string tag;
+        private readonly string tag;
         private string attValue;
         private TextStyle style;
         private Vector3 position;
@@ -521,7 +521,7 @@ namespace netDxf.Entities
 
             if (mirrText)
             {
-                if (Vector2.CrossProduct(newUvector, newVvector) < 0)
+                if (Vector2.CrossProduct(newUvector, newVvector) < 0.0)
                 {
                     newObliqueAngle = 90 - (newRotation - newObliqueAngle);
                     if (!(this.Alignment == TextAlignment.Fit || this.Alignment == TextAlignment.Aligned))

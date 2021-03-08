@@ -10879,7 +10879,7 @@ namespace netDxf.IO
                     {
                        continue; 
                     }
-                    pair.Key.FrozenLayers.AddRange(pair.Value);
+                    pair.Key.FrozenLayers.Add(layer);
                 }
             }
         }

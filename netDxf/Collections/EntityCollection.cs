@@ -36,9 +36,7 @@ namespace netDxf.Collections
         #region delegates and events
 
         public delegate void BeforeAddItemEventHandler(EntityCollection sender, EntityCollectionEventArgs e);
-
         public event BeforeAddItemEventHandler BeforeAddItem;
-
         protected virtual bool OnBeforeAddItemEvent(EntityObject item)
         {
             BeforeAddItemEventHandler ae = this.BeforeAddItem;
@@ -52,9 +50,7 @@ namespace netDxf.Collections
         }
 
         public delegate void AddItemEventHandler(EntityCollection sender, EntityCollectionEventArgs e);
-
         public event AddItemEventHandler AddItem;
-
         protected virtual void OnAddItemEvent(EntityObject item)
         {
             AddItemEventHandler ae = this.AddItem;
@@ -65,9 +61,7 @@ namespace netDxf.Collections
         }
 
         public delegate void RemoveItemEventHandler(EntityCollection sender, EntityCollectionEventArgs e);
-
         public event BeforeRemoveItemEventHandler BeforeRemoveItem;
-
         protected virtual bool OnBeforeRemoveItemEvent(EntityObject item)
         {
             BeforeRemoveItemEventHandler ae = this.BeforeRemoveItem;
@@ -81,9 +75,7 @@ namespace netDxf.Collections
         }
 
         public delegate void BeforeRemoveItemEventHandler(EntityCollection sender, EntityCollectionEventArgs e);
-
         public event RemoveItemEventHandler RemoveItem;
-
         protected virtual void OnRemoveItemEvent(EntityObject item)
         {
             RemoveItemEventHandler ae = this.RemoveItem;

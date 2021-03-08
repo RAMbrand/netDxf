@@ -6660,14 +6660,6 @@
             <param name="block">Insert block definition.</param>
             <param name="position">Insert <see cref="T:netDxf.Vector3">point</see> in world coordinates.</param>
         </member>
-        <member name="M:netDxf.Entities.Insert.#ctor(netDxf.Blocks.Block,netDxf.Vector3,System.Double)">
-            <summary>
-            Initializes a new instance of the <c>Insert</c> class.
-            </summary>
-            <param name="block">Insert block definition.</param>
-            <param name="position">Insert <see cref="T:netDxf.Vector3">point</see> in world coordinates.</param>
-            <param name="scale">Insert scale.</param>
-        </member>
         <member name="P:netDxf.Entities.Insert.DefaultInsUnits">
             <summary>
             Gets or sets the default drawing units to obtain the Insert transformation matrix, when the current Insert entity does not belong to a DXF document.
@@ -6704,10 +6696,13 @@
         </member>
         <member name="M:netDxf.Entities.Insert.Sync">
             <summary>
-            Updates the actual insert with the attribute properties currently defined in the block. This does not affect any values assigned to attributes in each block.
+            Updates the attribute list of the actual insert with the attribute definition list of the referenced block. This does not affect any value assigned to the Value property.
             </summary>
-            <remarks>This method will automatically call the TransformAttributes method, to keep all attributes position and orientation up to date.</remarks>
-            <remarks></remarks>
+            <remarks>
+            This method will automatically call the TransformAttributes method, to keep all attributes position and orientation up to date.<br />
+            This method will does not change the values assigned to attributes in the actual insert, besides the ones modified by the TransformAttributes() method;
+            position, normal, rotation, text height, width factor, oblique angle, is backwards, is upside down, and alignment values.
+            </remarks>
         </member>
         <member name="M:netDxf.Entities.Insert.GetTransformation">
             <summary>
@@ -6729,16 +6724,16 @@
         </member>
         <member name="M:netDxf.Entities.Insert.TransformAttributes">
             <summary>
-            Recalculate the attributes position, normal, rotation, text height, width factor, and oblique angle from the values applied to the insertion.
+            Recalculate the attributes position, normal, rotation, height, width, width factor, oblique angle, backwards, and upside down properties from the transformation state of the insertion.
             </summary>
             <remarks>
-            Changes to the insert, the block, or the document insertion units will require this method to be called manually.<br />
+            Making changes to the insert position, rotation, normal, and/or scale;
+            when changing the block origin and/or units; or even the document insertion units will require this method to be called manually.<br />
             The attributes position, normal, rotation, text height, width factor, and oblique angle values includes the transformations applied to the insertion,
             if required this method will calculate the proper values according to the ones defined by the attribute definition.<br />
             All the attribute values can be changed manually independently to its definition,
             but, usually, you will want them to be transformed with the insert based on the local values defined by the attribute definition.<br />
-            This method only applies to attributes that have a definition, some DXF files might generate attributes that have no definition in the block.<br />
-            At the moment the attribute width factor and oblique angle are not calculated, this is applied to inserts with non uniform scaling.
+            This method only applies to attributes that have a definition, some DXF files might generate attributes that have no definition in the block.
             </remarks>
         </member>
         <member name="M:netDxf.Entities.Insert.Explode">
@@ -6753,7 +6748,10 @@
             </summary>
             <param name="transformation">Transformation matrix.</param>
             <param name="translation">Translation vector.</param>
-            <remarks>Matrix3 adopts the convention of using column vectors to represent a transformation matrix.</remarks>
+            <remarks>
+            Matrix3 adopts the convention of using column vectors to represent a transformation matrix.<br />
+            The transformation will also be applied to the insert attributes.
+            </remarks>
         </member>
         <member name="M:netDxf.Entities.Insert.AssignHandle(System.Int64)">
             <summary>
@@ -19505,6 +19503,85 @@
         <member name="F:netDxf.XDataCode.WorldDirectionY">
             <summary>
             Also a 3D point that is rotated and mirrored along with the parent (but is not moved, scaled, or stretched)
+            </summary>
+        </member>
+        <member name="F:netDxf.XDataCode.WorldDirectionZ">
+            <summary>
+            Also a 3D point that is rotated and mirrored along with the parent (but is not moved, scaled, or stretched)
+            </summary>
+        </member>
+        <member name="F:netDxf.XDataCode.Real">
+            <summary>
+            A real value.
+            </summary>
+        </member>
+        <member name="F:netDxf.XDataCode.Distance">
+            <summary>
+            A real value that is scaled along with the parent entity
+            </summary>
+        </member>
+        <member name="F:netDxf.XDataCode.ScaleFactor">
+            <summary>
+            Also a real value that is scaled along with the parent.
+            The difference between a distance and a scale factor is application-defined
+            </summary>
+        </member>
+        <member name="F:netDxf.XDataCode.Int16">
+            <summary>
+            A 16-bit integer (signed or unsigned).
+            </summary>
+        </member>
+        <member name="F:netDxf.XDataCode.Int32">
+            <summary>
+            A 32-bit signed integer.
+            </summary>
+        </member>
+        <member name="T:netDxf.XDataRecord">
+            <summary>
+            Represents an entry in the extended data of an entity.
+            </summary>
+        </member>
+        <member name="P:netDxf.XDataRecord.OpenControlString">
+            <summary>
+            An extended data control string can be either "{"or "}".
+            These braces enable applications to organize their data by subdividing the data into lists.
+            The left brace begins a list, and the right brace terminates the most recent list. Lists can be nested.
+            </summary>
+        </member>
+        <member name="P:netDxf.XDataRecord.CloseControlString">
+            <summary>
+            An extended data control string can be either "{" or "}".
+            These braces enable applications to organize their data by subdividing the data into lists.
+            The left brace begins a list, and the right brace terminates the most recent list. Lists can be nested.
+            </summary>
+        </member>
+        <member name="M:netDxf.XDataRecord.#ctor(netDxf.XDataCode,System.Object)">
+            <summary>
+            Initializes a new XDataRecord.
+            </summary>
+            <param name="code">XData code.</param>
+            <param name="value">XData value.</param>
+        </member>
+        <member name="P:netDxf.XDataRecord.Code">
+            <summary>
+            Gets the XData code.
+            </summary>
+            <remarks>The only valid values are the ones defined in the <see cref="T:netDxf.XDataCode">XDataCode</see> class.</remarks>
+        </member>
+        <member name="P:netDxf.XDataRecord.Value">
+            <summary>
+            Gets the XData value.
+            </summary>
+        </member>
+        <member name="M:netDxf.XDataRecord.ToString">
+            <summary>
+            Obtains a string that represents the XDataRecord.
+            </summary>
+            <returns>A string text.</returns>
+        </member>
+    </members>
+</doc>
+along with the parent (but is not moved, scaled, or stretched)
             </summary>
         </member>
         <member name="F:netDxf.XDataCode.WorldDirectionZ">
