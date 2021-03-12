@@ -82,12 +82,18 @@ namespace netDxf.Collections
         /// <remarks>If the specified file already exists it return the same value, if neither it cannot be found in any of the support folders it will return an empty string.</remarks>
         public string FindFile(string file)
         {
-            if(File.Exists(file)) return file;
+            if (File.Exists(file))
+            {
+                return file;
+            }
             string name = Path.GetFileName(file);
             foreach (string folder in this.folders)
             {
                 string newFile = string.Format("{0}{1}{2}", folder, Path.DirectorySeparatorChar, name);
-                if (File.Exists(newFile)) return newFile;
+                if (File.Exists(newFile))
+                {
+                    return newFile;
+                }
             }
 
             return string.Empty;

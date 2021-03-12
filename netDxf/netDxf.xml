@@ -13046,7 +13046,7 @@
             </summary>
             <param name="a">Matrix4.</param>
             <param name="b">Matrix4.</param>
-            <returns>Matrix3.</returns>
+            <returns>Matrix4.</returns>
         </member>
         <member name="M:netDxf.Matrix4.Multiply(netDxf.Matrix4,netDxf.Matrix4)">
             <summary>
@@ -13080,7 +13080,7 @@
             </summary>
             <param name="m">Matrix4.</param>
             <param name="a">Scalar.</param>
-            <returns>Matrix3.</returns>
+            <returns>Matrix4.</returns>
         </member>
         <member name="M:netDxf.Matrix4.Multiply(netDxf.Matrix4,System.Double)">
             <summary>
@@ -13116,7 +13116,7 @@
             <summary>
             Calculates the inverse matrix.
             </summary>
-            <returns>Inverse Matrix3.</returns>
+            <returns>Inverse Matrix4.</returns>
         </member>
         <member name="M:netDxf.Matrix4.Transpose">
             <summary>
@@ -16915,7 +16915,7 @@
         </member>
         <member name="P:netDxf.Tables.ShapeStyle.Default">
             <summary>
-            Gets the default shape style
+            Gets the default shape style.
             </summary>
             <remarks>AutoCad stores the shapes for the predefined complex linetypes in the ltypeshp.shx file.</remarks>
         </member>
@@ -16962,35 +16962,35 @@
         </member>
         <member name="M:netDxf.Tables.ShapeStyle.NamesFromFile(System.String)">
             <summary>
-            Gets the list of shapes names defined in a SHP file.
+            Gets the list of shapes names defined in a SHX file.
             </summary>
-            <param name="file">Shape SHP file.</param>
-            <returns>List of shape names contained in the specified SHP file.</returns>
+            <param name="file">Shape SHX file.</param>
+            <returns>List of shape names contained in the specified SHX file.</returns>
         </member>
         <member name="M:netDxf.Tables.ShapeStyle.ContainsShapeName(System.String,System.String)">
             <summary>
             Checks if the shape SHP file contains a shape with the specified name.
             </summary>
-            <param name="file">Shape SHP file.</param>
+            <param name="file">Shape SHX file.</param>
             <param name="shapeName">Shape name.</param>
-            <returns>True if the shape SHP file that contains a shape with the specified name, false otherwise.</returns>
+            <returns>True if the shape SHX file that contains a shape with the specified name, false otherwise.</returns>
         </member>
-        <member name="M:netDxf.Tables.ShapeStyle.NamesFromShapeStyle(System.String)">
+        <member name="M:netDxf.Tables.ShapeStyle.NamesFromShapeStyle">
             <summary>
-            Gets the list of shapes names defined in the actual shape style (the shape SHP file must be accessible).
+            Gets the list of shapes names defined in the actual shape style (the shape SHX file must be accessible).
             </summary>
             <returns>List of shape names contained in the actual shape style.</returns>
             <remarks>
-            If the actual shape style belongs to a document, it will look for the SHP file also in the document support folders.
+            If the actual shape style belongs to a document, it will look for the SHX file also in the document support folders.
             </remarks>
         </member>
         <member name="M:netDxf.Tables.ShapeStyle.ContainsShapeName(System.String)">
             <summary>
-            Checks if the actual shape style contains a shape with the specified name (the shape SHP file must be accessible).
+            Checks if the actual shape style contains a shape with the specified name (the shape SHX file must be accessible).
             </summary>
             <param name="name">Shape name.</param>
             <returns>True if the shape style that contains a shape with the specified name, false otherwise.</returns>
-            <remarks>If the actual shape style belongs to a document, it will look for the SHP file also in the document support folders.</remarks>
+            <remarks>If the actual shape style belongs to a document, it will look for the SHX file also in the document support folders.</remarks>
         </member>
         <member name="M:netDxf.Tables.ShapeStyle.ShapeNumber(System.String)">
             <summary>
@@ -16998,7 +16998,7 @@
             </summary>
             <param name="name">Name of the shape.</param>
             <returns>The number of the shape, 0 in case the shape has not been found.</returns>
-            <remarks>If the actual shape style belongs to a document, it will look for the SHP file also in the document support folders.</remarks>
+            <remarks>If the actual shape style belongs to a document, it will look for the SHX file also in the document support folders.</remarks>
         </member>
         <member name="M:netDxf.Tables.ShapeStyle.ShapeName(System.Int16)">
             <summary>
@@ -17006,7 +17006,7 @@
             </summary>
             <param name="number">Number of the shape.</param>
             <returns>The name of the shape, empty in case the shape has not been found.</returns>
-            <remarks>If the actual shape style belongs to a document, it will look for the SHP file also in the document support folders.</remarks>
+            <remarks>If the actual shape style belongs to a document, it will look for the SHX file also in the document support folders.</remarks>
         </member>
         <member name="M:netDxf.Tables.ShapeStyle.Clone(System.String)">
             <summary>
@@ -19021,7 +19021,7 @@
         </member>
         <member name="M:netDxf.Vector4.#ctor(System.Double,System.Double,System.Double,System.Double)">
             <summary>
-            Initializes a new instance of Vector3.
+            Initializes a new instance of Vector4.
             </summary>
             <param name="x">X component.</param>
             <param name="y">Y component.</param>
@@ -19099,7 +19099,7 @@
             <summary>
              Returns a value indicating if any component of the specified vector evaluates to a value that is not a number <see cref="F:System.Double.NaN"/>.
             </summary>
-            <param name="u">Vector3.</param>
+            <param name="u">Vector4.</param>
             <returns>Returns true if any component of the specified vector evaluates to <see cref="F:System.Double.NaN"/>; otherwise, false.</returns>
         </member>
         <member name="M:netDxf.Vector4.DotProduct(netDxf.Vector4,netDxf.Vector4)">

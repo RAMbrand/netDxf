@@ -45,7 +45,7 @@ namespace netDxf
         #region constructors
 
         /// <summary>
-        /// Initializes a new instance of Vector3.
+        /// Initializes a new instance of Vector4.
         /// </summary>
         /// <param name="x">X component.</param>
         /// <param name="y">Y component.</param>
@@ -251,7 +251,7 @@ namespace netDxf
         /// <summary>
         ///  Returns a value indicating if any component of the specified vector evaluates to a value that is not a number <see cref="System.Double.NaN"/>.
         /// </summary>
-        /// <param name="u">Vector3.</param>
+        /// <param name="u">Vector4.</param>
         /// <returns>Returns true if any component of the specified vector evaluates to <see cref="System.Double.NaN"/>; otherwise, false.</returns>
         public static bool IsNaN(Vector4 u)
         {

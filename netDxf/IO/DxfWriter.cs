@@ -3577,7 +3577,7 @@ namespace netDxf.IO
                         break;
                     case DimensionStyleOverrideType.ExtLine2Off:
                         xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) 76));
-                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16,(bool) styleOverride.Value ? (short) 1 : (short) 0));
+                        xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (bool) styleOverride.Value ? (short) 1 : (short) 0));
                         break;
                     case DimensionStyleOverrideType.ExtLineOffset:
                         xdataEntry.XDataRecord.Add(new XDataRecord(XDataCode.Int16, (short) 42));

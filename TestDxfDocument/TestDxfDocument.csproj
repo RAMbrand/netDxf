@@ -19,6 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Support\ltypeshp.shp" />
+    <None Remove="Support\shape.shp" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
 
@@ -54,13 +59,7 @@
     <None Update="Support\acadiso.pat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Support\ltypeshp.shp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Support\ltypeshp.shx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Support\shape.shp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

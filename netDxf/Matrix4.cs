@@ -689,7 +689,7 @@ namespace netDxf
         /// </summary>
         /// <param name="a">Matrix4.</param>
         /// <param name="b">Matrix4.</param>
-        /// <returns>Matrix3.</returns>
+        /// <returns>Matrix4.</returns>
         public static Matrix4 operator *(Matrix4 a, Matrix4 b)
         {
             if (a.IsIdentity)
@@ -767,7 +767,7 @@ namespace netDxf
         /// </summary>
         /// <param name="m">Matrix4.</param>
         /// <param name="a">Scalar.</param>
-        /// <returns>Matrix3.</returns>
+        /// <returns>Matrix4.</returns>
         public static Matrix4 operator *(Matrix4 m, double a)
         {
             return new Matrix4(m.M11 * a, m.M12 * a, m.M13 * a, m.M14 * a,
@@ -833,7 +833,7 @@ namespace netDxf
         /// <summary>
         /// Calculates the inverse matrix.
         /// </summary>
-        /// <returns>Inverse Matrix3.</returns>
+        /// <returns>Inverse Matrix4.</returns>
         public Matrix4 Inverse()
         {
             if (this.IsIdentity)
