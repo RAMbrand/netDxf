@@ -30,6 +30,12 @@ namespace TestDxfDocument
         {
             DxfDocument doc = Test(@"sample.dxf");
 
+            #region Samples for new and modified features 2.4.1
+
+            //LayerStateManager();
+
+            #endregion
+
             #region Samples for new and modified features 2.3.0
 
             //ExplodeInsert();
@@ -38,7 +44,6 @@ namespace TestDxfDocument
             //TransformLwPolyline();
             //TransformEllipse();
             //AddHeaderVariable();
-            //ViewportTransform();
             //MLineMirrorAndExplode();
             //ShapeMirror();
             //TextMirror();
@@ -245,7 +250,86 @@ namespace TestDxfDocument
             //WriteInsert();
 
             #endregion
+
         }
+
+        #region Samples for new and modified features 2.4.1
+
+        private static void LayerStateManager()
+        {
+            //Autodesk may have changed the LAS format through the years, if you find a problem with them open an issue at Github
+
+            // a list of layer as a basis to create a layer state
+            List<Layer> layers = new List<Layer>();
+            layers.Add(new Layer("Layer1")
+            {
+                Color = AciColor.Red,
+                Lineweight = Lineweight.W15
+            });
+            layers.Add(new Layer("Layer2")
+            {
+                Color = AciColor.Green,
+                Lineweight = Lineweight.W35
+            });
+            layers.Add(new Layer("Layer3")
+            {
+                Color = AciColor.Blue,
+                Lineweight = Lineweight.W70
+            });
+
+            // this will create a new layer state from the properties of the layers in the list
+            LayerState layerState = new LayerState("LayerState1", layers);
+            // now we can save it to an external LAS file for later use
+            layerState.Save("LayerStateTest.las");
+
+            // we can also create a layer state from an external LAS file
+            LayerState layerStateLoad = LayerState.Load("LayerStateTest.las");
+
+            // lets apply this into a new document
+            DxfDocument doc = new DxfDocument();
+
+            // add the newly loaded layer state
+            doc.Layers.StateManager.Add(layerStateLoad);
+
+            // the main methods to work with layer states are done through the StateManger accessible through the Layers of the document
+            // import the external LAS file into the document
+            // you can set if the imported layer state will overwrite any existing layer state with the same name
+            // in this case there is one and we want to overwrite it, if it is set to false in this case the imported LAS file will not be added
+            doc.Layers.StateManager.Import("LayerStateTest.las", true);
+
+            // create a new layer state from the actual layer list of the document
+            doc.Layers.StateManager.AddNew("LayerState2");
+            // this is equivalent to this, it is a shortcut
+            // doc.Layers.StateManager.Add(new LayerState("LayerState2", doc.Layers));
+
+            doc.Layers.StateManager["LayerState2"].Properties["Layer1"].Color = AciColor.Yellow;
+            doc.Layers.StateManager["LayerState2"].Properties["Layer2"].Color = AciColor.Magenta;
+            doc.Layers.StateManager["LayerState2"].Properties["Layer3"].Color = AciColor.Cyan;
+
+            // this will reset the actual layer properties with the ones stored in the specified layer state
+            // optionally you can set the which properties you want to restore with the LayerStateManager.Options
+            doc.Layers.StateManager.Options = LayerPropertiesRestoreFlags.Color;
+            doc.Layers.StateManager.Restore("LayerState2");
+
+            LayerStateProperties prop = new LayerStateProperties("OtherLayer");
+            // this will generate an error,
+            // when a layer state belongs to a document the newly added layer state properties must refer to one of the already existing layers
+            //doc.Layers.StateManager["LayerState2"].Properties.Add(prop.Name, prop);
+
+            // it is not a problem for not owned layer states
+            LayerState otherLayerState = new LayerState("OtherLayerState");
+            otherLayerState.Properties.Add(prop.Name, prop);
+            // when adding it to the layer state manager of a document the missing "OtherLayer" will be created
+            doc.Layers.StateManager.Add(otherLayerState);
+
+            // the layer states will be stored in the DXF
+            doc.Save("test.dxf");
+
+            DxfDocument loaded = DxfDocument.Load("test.dxf");
+            loaded.Save("test.dxf");
+        }
+
+        #endregion
 
         #region Samples for new and modified features 2.3.0
 
@@ -1438,7 +1522,7 @@ namespace TestDxfDocument
             AttributeDefinition attdef = new AttributeDefinition("MyAttribute")
             {
                 Prompt = "Enter a value:",
-                Value = 0,
+                Value = "0",
                 Position = Vector3.Zero,
                 Layer = new Layer("MyLayer")
                 {
@@ -1498,7 +1582,7 @@ namespace TestDxfDocument
             AttributeDefinition def = new AttributeDefinition("AttDefOutsideBlock")
             {
                 Prompt = "Enter value:",
-                Value = 0,
+                Value = "0",
                 Color = AciColor.Blue,
                 Position = new Vector3(0, 30, 0)
             };
@@ -2976,6 +3060,7 @@ namespace TestDxfDocument
             // we can also change the name of the application registry name
             doc.ApplicationRegistries["newXData"].Name = "netDxfRenamed";
 
+            doc.RasterVariables.XData.Add(xdata);
             doc.Save("xData.dxf");
 
             doc = DxfDocument.Load("xData.dxf");
@@ -3608,7 +3693,7 @@ namespace TestDxfDocument
             AttributeDefinition attdef = new AttributeDefinition("MyAttribute")
             {
                 Prompt = "Enter a value:",
-                Value = 0,
+                Value = "0",
                 Position = Vector3.Zero,
                 Layer = new Layer("MyLayer")
                 {
@@ -3668,7 +3753,7 @@ namespace TestDxfDocument
             AttributeDefinition def = new AttributeDefinition("AttDefOutsideBlock")
             {
                 Prompt = "Enter value:",
-                Value = 0,
+                Value = "0",
                 Color = AciColor.Blue,
                 Position = new Vector3(0, 30, 0)
             };
@@ -4219,7 +4304,7 @@ namespace TestDxfDocument
             // this is the text prompt shown to introduce the attribute value when a new Insert entity is inserted into the drawing
             attdef.Prompt = "InfoText";
             // optionally we can set a default value for new Insert entities
-            attdef.Value = 0;
+            attdef.Value = "0";
             // the attribute definition position is in local coordinates to the Insert entity to which it belongs
             attdef.Position = new Vector3(1, 1, 0);
 
@@ -4270,7 +4355,7 @@ namespace TestDxfDocument
             insert1.TransformAttributes();
 
             // Once the insert has been created we can modify the attributes properties, the list cannot be modified only the items stored in it
-            insert1.Attributes[0].Value = 24;
+            insert1.Attributes[0].Value = 24.ToString();
 
             // Modifying directly the layer might not get the desired results. Create one or get one from the layers table, modify it and assign it to the insert
             // One thing to note, if there is already a layer with the same name, the existing one in the layers table will override the new one, when the entity is added to the document.
@@ -4293,7 +4378,7 @@ namespace TestDxfDocument
             Insert insert2 = new Insert(block, new Vector3(10, 5, 0));
 
             // as before now we can change the insert2 attribute value
-            insert2.Attributes[0].Value = 34;
+            insert2.Attributes[0].Value = 34.ToString();
 
             // additionally we can insert extended data information
             XData xdata1 = new XData(new ApplicationRegistry("netDxf"));
@@ -5128,7 +5213,7 @@ namespace TestDxfDocument
             return dxf;
         }
 
-        public static void ImageAndClipBoundary()
+        private static void ImageAndClipBoundary()
         {
             // a square bitmap
             ImageDefinition imageDefinition = new ImageDefinition("MyImage", "image.jpg");
@@ -7418,10 +7503,10 @@ namespace TestDxfDocument
             nestedBlock.AttributeDefinitions.Add(attdef);
 
             Insert nestedInsert = new Insert(nestedBlock, new Vector3(0, 0, 0)); // the position will be relative to the position of the insert that nest it
-            nestedInsert.Attributes[0].Value = 24;
+            nestedInsert.Attributes[0].Value = 24.ToString();
 
             Insert nestedInsert2 = new Insert(nestedBlock, new Vector3(-20, 0, 0)); // the position will be relative to the position of the insert that nest it
-            nestedInsert2.Attributes[0].Value = -20;
+            nestedInsert2.Attributes[0].Value = (-20).ToString();
 
             Block block = new Block("MyBlock");
             block.Entities.Add(new Line(new Vector3(-5, -5, 0), new Vector3(5, 5, 0)));

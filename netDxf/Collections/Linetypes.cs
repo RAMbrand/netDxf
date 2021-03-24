@@ -1,7 +1,7 @@
-#region netDxf library, Copyright (C) 2009-2018 Daniel Carvajal (haplokuon@gmail.com)
+#region netDxf library, Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 
 //                        netDxf library
-// Copyright (C) 2009-2018 Daniel Carvajal (haplokuon@gmail.com)
+// Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 // 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -43,7 +43,6 @@ namespace netDxf.Collections
         internal Linetypes(DxfDocument document, string handle)
             : base(document, DxfObjectCode.LinetypeTable, handle)
         {
-            this.MaxCapacity = short.MaxValue;
         }
 
         #endregion
@@ -159,8 +158,6 @@ namespace netDxf.Collections
         /// </returns>
         internal override Linetype Add(Linetype linetype, bool assignHandle)
         {
-            if (this.list.Count >= this.MaxCapacity)
-                throw new OverflowException(string.Format("Table overflow. The maximum number of elements the table {0} can have is {1}", this.CodeName, this.MaxCapacity));
             if (linetype == null)
                 throw new ArgumentNullException(nameof(linetype));
 
@@ -236,6 +233,10 @@ namespace netDxf.Collections
             if (this.references[item.Name].Count != 0)
                 return false;
 
+            LinetypeSegment[] segments = new LinetypeSegment[item.Segments.Count];
+            item.Segments.CopyTo(segments, 0);
+            item.Segments.Remove(segments);
+
             this.Owner.AddedObjects.Remove(item.Handle);
             this.references.Remove(item.Name);
             this.list.Remove(item.Name);
@@ -271,13 +272,13 @@ namespace netDxf.Collections
             {
                 LinetypeTextSegment textSegment = (LinetypeTextSegment)e.Item;
                 textSegment.Style = this.Owner.TextStyles.Add(textSegment.Style);
-                //this.Owner.TextStyles.References[textSegment.Style.Name].Add(sender);
+                this.Owner.TextStyles.References[textSegment.Style.Name].Add(sender);
             }
             if (e.Item.Type == LinetypeSegmentType.Shape)
             {
                 LinetypeShapeSegment shapeSegment = (LinetypeShapeSegment)e.Item;
                 shapeSegment.Style = this.Owner.ShapeStyles.Add(shapeSegment.Style);
-                //this.Owner.ShapeStyles.References[shapeSegment.Name].Add(sender);
+                this.Owner.ShapeStyles.References[shapeSegment.Name].Add(sender);
             }
         }
 

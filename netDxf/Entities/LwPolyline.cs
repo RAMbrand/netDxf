@@ -1,7 +1,7 @@
-﻿#region netDxf library, Copyright (C) 2009-2019 Daniel Carvajal (haplokuon@gmail.com)
+﻿#region netDxf library, Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 
 //                        netDxf library
-// Copyright (C) 2009-2019 Daniel Carvajal (haplokuon@gmail.com)
+// Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 // 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -30,7 +30,7 @@ namespace netDxf.Entities
     /// Represents a light weight polyline <see cref="EntityObject">entity</see>.
     /// </summary>
     /// <remarks>
-    /// Light weight polylines are bidimensional polylines that can hold information about the width of the lines and arcs that compose them.
+    /// Light weight polylines are bi-dimensional polylines that can hold information about the width of the lines and arcs that compose them.
     /// </remarks>
     public class LwPolyline :
         EntityObject
@@ -69,13 +69,19 @@ namespace netDxf.Entities
         /// <param name="vertexes">LwPolyline <see cref="Vector2">vertex</see> list in object coordinates.</param>
         /// <param name="isClosed">Sets if the polyline is closed, by default it will create an open polyline.</param>
         public LwPolyline(IEnumerable<Vector2> vertexes, bool isClosed)
-            : base(EntityType.LwPolyline, DxfObjectCode.LightWeightPolyline)
+            : base(EntityType.LwPolyline, DxfObjectCode.LwPolyline)
         {
             if (vertexes == null)
+            {
                 throw new ArgumentNullException(nameof(vertexes));
+            }
+
             this.vertexes = new List<LwPolylineVertex>();
             foreach (Vector2 vertex in vertexes)
+            {
                 this.vertexes.Add(new LwPolylineVertex(vertex));
+            }
+
             this.elevation = 0.0;
             this.thickness = 0.0;
             this.flags = isClosed ? PolylineTypeFlags.ClosedPolylineOrClosedPolygonMeshInM : PolylineTypeFlags.OpenPolyline;
@@ -96,10 +102,13 @@ namespace netDxf.Entities
         /// <param name="vertexes">LwPolyline <see cref="LwPolylineVertex">vertex</see> list in object coordinates.</param>
         /// <param name="isClosed">Sets if the polyline is closed  (default: false).</param>
         public LwPolyline(IEnumerable<LwPolylineVertex> vertexes, bool isClosed)
-            : base(EntityType.LwPolyline, DxfObjectCode.LightWeightPolyline)
+            : base(EntityType.LwPolyline, DxfObjectCode.LwPolyline)
         {
             if (vertexes == null)
+            {
                 throw new ArgumentNullException(nameof(vertexes));
+            }
+
             this.vertexes = new List<LwPolylineVertex>(vertexes);
             this.elevation = 0.0;
             this.thickness = 0.0;
@@ -127,9 +136,13 @@ namespace netDxf.Entities
             set
             {
                 if (value)
+                {
                     this.flags |= PolylineTypeFlags.ClosedPolylineOrClosedPolygonMeshInM;
+                }
                 else
+                {
                     this.flags &= ~PolylineTypeFlags.ClosedPolylineOrClosedPolygonMeshInM;
+                }
             }
         }
 
@@ -161,9 +174,13 @@ namespace netDxf.Entities
             set
             {
                 if (value)
+                {
                     this.flags |= PolylineTypeFlags.ContinuousLinetypePattern;
+                }
                 else
+                {
                     this.flags &= ~PolylineTypeFlags.ContinuousLinetypePattern;
+                }
             }
         }
 
@@ -189,7 +206,21 @@ namespace netDxf.Entities
         /// </summary>
         public void Reverse()
         {
+            if (this.vertexes.Count < 2)
+            {
+                return;
+            }
+
             this.vertexes.Reverse();
+
+            double firstBulge = this.vertexes[0].Bulge;
+       
+            for (int i = 0; i < this.vertexes.Count - 1; i++)
+            {
+                this.vertexes[i].Bulge = -this.vertexes[i+1].Bulge;
+            }
+
+            this.vertexes[this.vertexes.Count - 1].Bulge = -firstBulge;
         }
 
         /// <summary>
@@ -222,7 +253,9 @@ namespace netDxf.Entities
                 if (index == this.Vertexes.Count - 1)
                 {
                     if (!this.IsClosed)
+                    {
                         break;
+                    }
                     p1 = new Vector2(vertex.Position.X, vertex.Position.Y);
                     p2 = new Vector2(this.vertexes[0].Position.X, this.vertexes[0].Position.Y);
                 }
@@ -255,9 +288,9 @@ namespace netDxf.Entities
                 else
                 {
                     // the polyline edge is an arc
-                    double theta = 4*Math.Atan(Math.Abs(bulge));
+                    double theta = 4 * Math.Atan(Math.Abs(bulge));
                     double c = Vector2.Distance(p1, p2);
-                    double r = (c/2)/Math.Sin(theta/2);
+                    double r = (c / 2) / Math.Sin(theta / 2);
 
                     // avoid arcs with very small radius, draw a line instead
                     if (MathHelper.IsZero(r))
@@ -332,7 +365,7 @@ namespace netDxf.Entities
         /// <summary>
         /// Obtains a list of vertexes that represent the polyline approximating the curve segments as necessary.
         /// </summary>
-        /// <param name="bulgePrecision">Curve segments precision (a value of zero means that no approximation will be made).</param>
+        /// <param name="bulgePrecision">Curve segments precision. The number of vertexes created, a value of zero means that no approximation will be made.</param>
         /// <param name="weldThreshold">Tolerance to consider if two new generated vertexes are equal.</param>
         /// <param name="bulgeThreshold">Minimum distance from which approximate curved segments of the polyline.</param>
         /// <returns>A list of vertexes expressed in object coordinate system.</returns>
@@ -351,9 +384,12 @@ namespace netDxf.Entities
                 if (index == this.Vertexes.Count - 1)
                 {
                     p1 = new Vector2(vertex.Position.X, vertex.Position.Y);
+                    if (!this.IsClosed)
+                    {
+                        ocsVertexes.Add(p1);
+                        continue;
+                    }
                     p2 = new Vector2(this.vertexes[0].Position.X, this.vertexes[0].Position.Y);
-                    // ignore bulge value of last vertex for open polylines
-                    if(!this.IsClosed) bulge = 0;
                 }
                 else
                 {
@@ -381,16 +417,17 @@ namespace netDxf.Entities
                             Vector2 a1 = p1 - center;
                             double angle = Math.Sign(bulge) * theta / (bulgePrecision + 1);
                             ocsVertexes.Add(p1);
+                            Vector2 prevCurvePoint = p1;
                             for (int i = 1; i <= bulgePrecision; i++)
                             {
                                 Vector2 curvePoint = new Vector2();
-                                Vector2 prevCurvePoint = new Vector2(this.vertexes[this.vertexes.Count - 1].Position.X, this.vertexes[this.vertexes.Count - 1].Position.Y);
                                 curvePoint.X = center.X + Math.Cos(i * angle) * a1.X - Math.Sin(i * angle) * a1.Y;
                                 curvePoint.Y = center.Y + Math.Sin(i * angle) * a1.X + Math.Cos(i * angle) * a1.Y;
 
                                 if (!curvePoint.Equals(prevCurvePoint, weldThreshold) && !curvePoint.Equals(p2, weldThreshold))
                                 {
                                     ocsVertexes.Add(curvePoint);
+                                    prevCurvePoint = curvePoint;
                                 }
                             }
                         }
@@ -465,10 +502,14 @@ namespace netDxf.Entities
             };
 
             foreach (LwPolylineVertex vertex in this.vertexes)
+            {
                 entity.Vertexes.Add((LwPolylineVertex) vertex.Clone());
+            }
 
             foreach (XData data in this.XData.Values)
+            {
                 entity.XData.Add((XData) data.Clone());
+            }
 
             return entity;
         }

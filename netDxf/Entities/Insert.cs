@@ -1,7 +1,7 @@
-﻿#region netDxf library, Copyright (C) 2009-2019 Daniel Carvajal (haplokuon@gmail.com)
+﻿#region netDxf library, Copyright (C) 2009-2021 Daniel Carvajal (haplokuon@gmail.com)
 
 //                        netDxf library
-// Copyright (C) 2009-2019 Daniel Carvajal (haplokuon@gmail.com)
+// Copyright (C) 2009-2021 Daniel Carvajal (haplokuon@gmail.com)
 // 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -37,26 +37,40 @@ namespace netDxf.Entities
     {
         #region delegates and events
 
+        //public delegate void BlockChangedEventHandler(Insert sender, TableObjectChangedEventArgs<Block> e);
+        //public event BlockChangedEventHandler BlockChanged;
+        //protected virtual Block OnBlockChangedEvent(Block oldBlock, Block newBlock)
+        //{
+        //    BlockChangedEventHandler ae = this.BlockChanged;
+        //    if (ae != null)
+        //    {
+        //        TableObjectChangedEventArgs<Block> eventArgs = new TableObjectChangedEventArgs<Block>(oldBlock, newBlock);
+        //        ae(this, eventArgs);
+        //        return eventArgs.NewValue;
+        //    }
+        //    return newBlock;
+        //}
+
         public delegate void AttributeAddedEventHandler(Insert sender, AttributeChangeEventArgs e);
-
         public event AttributeAddedEventHandler AttributeAdded;
-
         protected virtual void OnAttributeAddedEvent(Attribute item)
         {
             AttributeAddedEventHandler ae = this.AttributeAdded;
             if (ae != null)
+            {
                 ae(this, new AttributeChangeEventArgs(item));
+            }
         }
 
         public delegate void AttributeRemovedEventHandler(Insert sender, AttributeChangeEventArgs e);
-
         public event AttributeRemovedEventHandler AttributeRemoved;
-
         protected virtual void OnAttributeRemovedEvent(Attribute item)
         {
             AttributeRemovedEventHandler ae = this.AttributeRemoved;
             if (ae != null)
+            {
                 ae(this, new AttributeChangeEventArgs(item));
+            }
         }
 
         #endregion
@@ -77,13 +91,18 @@ namespace netDxf.Entities
         internal Insert(List<Attribute> attributes)
             : base(EntityType.Insert, DxfObjectCode.Insert)
         {
-            if(attributes == null)
+            if (attributes == null)
+            {
                 throw new ArgumentNullException(nameof(attributes));
+            }
+
             this.attributes = new AttributeCollection(attributes);
             foreach (Attribute att in this.attributes)
             {
-                if(att.Owner!=null)
+                if (att.Owner != null)
+                {
                     throw new ArgumentException("The attributes list contains at least an attribute that already has an owner.", nameof(attributes));
+                }
                 att.Owner = this;
             }
 
@@ -92,7 +111,6 @@ namespace netDxf.Entities
             this.scale = new Vector3(1.0);
             this.rotation = 0.0;
             this.endSequence = new EndSequence(this);
-
         }
 
         /// <summary>
@@ -120,26 +138,16 @@ namespace netDxf.Entities
         /// <param name="block">Insert block definition.</param>
         /// <param name="position">Insert <see cref="Vector3">point</see> in world coordinates.</param>
         public Insert(Block block, Vector3 position)
-            : this(block, position, 1.0)
-        {           
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <c>Insert</c> class.
-        /// </summary>
-        /// <param name="block">Insert block definition.</param>
-        /// <param name="position">Insert <see cref="Vector3">point</see> in world coordinates.</param>
-        public Insert(Block block, Vector3 position, double scale)
             : base(EntityType.Insert, DxfObjectCode.Insert)
         {
             if (block == null)
+            {
                 throw new ArgumentNullException(nameof(block));
+            }
 
             this.block = block;
             this.position = position;
-            if (scale <= 0)
-                throw new ArgumentOutOfRangeException(nameof(scale), scale, "The Insert scale must be greater than zero.");
-            this.scale = new Vector3(scale);
+            this.scale = new Vector3(1.0);
             this.rotation = 0.0;
             this.endSequence = new EndSequence(this);
 
@@ -181,10 +189,37 @@ namespace netDxf.Entities
         /// <summary>
         /// Gets the insert <see cref="Block">block definition</see>.
         /// </summary>
+        /// <remarks>
+        /// When changing the block associated to 
+        /// </remarks>
         public Block Block
         {
             get { return this.block; }
-            internal set { this.block = value; }
+            internal set
+            {
+                //if (value == null)
+                //{
+                //    throw new ArgumentNullException(nameof(value));
+                //}
+
+                //if (value.IsForInternalUseOnly)
+                //{
+                //    throw new ArgumentException("The block is for internal use only.");
+                //}
+
+                //this.block = this.OnBlockChangedEvent(this.block, value);
+
+                //// remove all attributes in the actual insert
+                //foreach (Attribute att in this.attributes)
+                //{
+                //    this.OnAttributeRemovedEvent(att);
+                //    att.Handle = null;
+                //    att.Owner = null;
+                //}
+                //this.attributes = new AttributeCollection();
+
+                this.block = value;
+            }
         }
 
         /// <summary>
@@ -206,7 +241,10 @@ namespace netDxf.Entities
             set
             {
                 if (MathHelper.IsZero(value.X) || MathHelper.IsZero(value.Y) || MathHelper.IsZero(value.Z))
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), value, "None of the vector scale components can be zero.");
+                }
+
                 this.scale = value;
             }
         }
@@ -234,32 +272,46 @@ namespace netDxf.Entities
         #region public methods
 
         /// <summary>
-        /// Updates the actual insert with the attribute properties currently defined in the block. This does not affect any values assigned to attributes in each block.
+        /// Updates the attribute list of the actual insert with the attribute definition list of the referenced block. This does not affect any value assigned to the Value property.
         /// </summary>
-        /// <remarks>This method will automatically call the TransformAttributes method, to keep all attributes position and orientation up to date.</remarks>
-        /// <remarks></remarks>
+        /// <remarks>
+        /// This method will automatically call the TransformAttributes method, to keep all attributes position and orientation up to date.<br />
+        /// This method will does not change the values assigned to attributes in the actual insert, besides the ones modified by the TransformAttributes() method;
+        /// position, normal, rotation, text height, width factor, oblique angle, is backwards, is upside down, and alignment values.
+        /// </remarks>
         public void Sync()
         {
-            List<Attribute> atts = new List<Attribute>(this.block.AttributeDefinitions.Count);
+            List<Attribute> atts = new List<Attribute>();
 
-            // remove all attributes in the actual insert
+            // remove all attributes that have no attribute definition in the block
             foreach (Attribute att in this.attributes)
             {
-                this.OnAttributeRemovedEvent(att);
-                att.Handle = null;
-                att.Owner = null;
+                string tag = att.Tag;
+                if (this.block.AttributeDefinitions.ContainsTag(tag))
+                {
+                    atts.Add(att);
+                }
+                else
+                {
+                    this.OnAttributeRemovedEvent(att);
+                    att.Handle = null;
+                    att.Owner = null;
+                }
             }
 
             // add any new attributes from the attribute definitions of the block
             foreach (AttributeDefinition attdef in this.block.AttributeDefinitions.Values)
             {
-                Attribute att = new Attribute(attdef)
+                if (this.attributes.AttributeWithTag(attdef.Tag) == null)
                 {
-                    Owner = this
-                };
+                    Attribute att = new Attribute(attdef)
+                    {
+                        Owner = this
+                    };
 
-                atts.Add(att);
-                this.OnAttributeAddedEvent(att);
+                    atts.Add(att);
+                    this.OnAttributeAddedEvent(att);
+                }
             }
             this.attributes = new AttributeCollection(atts);
 
@@ -279,9 +331,13 @@ namespace netDxf.Entities
         {
             DrawingUnits insUnits;
             if (this.Owner == null)
+            {
                 insUnits = DefaultInsUnits;
+            }
             else
+            {
                 insUnits = this.Owner.Record.Layout == null ? this.Owner.Record.Units : this.Owner.Record.Owner.Owner.DrawingVariables.InsUnits;
+            }
 
             double docScale = UnitHelper.ConversionFactor(this.Block.Record.Units, insUnits);
             Matrix3 trans = MathHelper.ArbitraryAxis(this.Normal);
@@ -322,27 +378,31 @@ namespace netDxf.Entities
         {
             // if the insert does not contain attributes there is nothing to do
             if (this.attributes.Count == 0)
+            {
                 return;
+            }
 
             Matrix3 transformation = this.GetTransformation();
             Vector3 translation = this.Position - transformation * this.block.Origin;
 
             foreach (Attribute att in this.attributes)
             {
-                AttributeDefinition attdef = att.Definition;
-                if (attdef == null)
+                AttributeDefinition attDef = att.Definition;
+                if (attDef == null)
+                {
                     continue;
+                }
 
                 // reset the attribute to its default values
-                att.Position = attdef.Position;
-                att.Height = attdef.Height;
-                att.Width = attdef.Width;
-                att.WidthFactor = attdef.WidthFactor;
-                att.ObliqueAngle = attdef.ObliqueAngle;
-                att.Rotation = attdef.Rotation;
-                att.Normal = attdef.Normal;
-                att.IsBackward = attdef.IsBackward;
-                att.IsUpsideDown = attdef.IsUpsideDown;
+                att.Position = attDef.Position;
+                att.Height = attDef.Height;
+                att.Width = attDef.Width;
+                att.WidthFactor = attDef.WidthFactor;
+                att.ObliqueAngle = attDef.ObliqueAngle;
+                att.Rotation = attDef.Rotation;
+                att.Normal = attDef.Normal;
+                att.IsBackward = attDef.IsBackward;
+                att.IsUpsideDown = attDef.IsUpsideDown;
 
                 att.TransformBy(transformation, translation);
             }

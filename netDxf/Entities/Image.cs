@@ -33,6 +33,24 @@ namespace netDxf.Entities
     public class Image :
         EntityObject
     {
+        #region delegates and events
+
+        public delegate void ImageDefinitionChangedEventHandler(Image sender, TableObjectChangedEventArgs<ImageDefinition> e);
+        public event ImageDefinitionChangedEventHandler ImageDefinitionChanged;
+        protected virtual ImageDefinition OnImageDefinitionChangedEvent(ImageDefinition oldImageDefinition, ImageDefinition newImageDefinition)
+        {
+            ImageDefinitionChangedEventHandler ae = this.ImageDefinitionChanged;
+            if (ae != null)
+            {
+                TableObjectChangedEventArgs<ImageDefinition> eventArgs = new TableObjectChangedEventArgs<ImageDefinition>(oldImageDefinition, newImageDefinition);
+                ae(this, eventArgs);
+                return eventArgs.NewValue;
+            }
+            return newImageDefinition;
+        }
+
+        #endregion
+
         #region private fields
 
         private Vector3 position;
@@ -40,7 +58,6 @@ namespace netDxf.Entities
         private Vector2 vvector;
         private double width;
         private double height;
-        //private double rotation;
         private ImageDefinition imageDefinition;
         private bool clipping;
         private short brightness;
@@ -103,19 +120,24 @@ namespace netDxf.Entities
             : base(EntityType.Image, DxfObjectCode.Image)
         {
             if (imageDefinition == null)
+            {
                 throw new ArgumentNullException(nameof(imageDefinition));
+            }
 
             this.imageDefinition = imageDefinition;
             this.position = position;
             this.uvector = Vector2.UnitX;
             this.vvector = Vector2.UnitY;
             if (width <= 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(width), width, "The Image width must be greater than zero.");
+            }
             this.width = width;
             if (height <= 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(height), height, "The Image height must be greater than zero.");
+            }
             this.height = height;
-            //this.rotation = 0;
             this.clipping = false;
             this.brightness = 50;
             this.contrast = 50;
@@ -145,8 +167,10 @@ namespace netDxf.Entities
             get { return this.uvector; }
             set
             {
-                if(Vector2.Equals(Vector2.Zero, value))
+                if (Vector2.Equals(Vector2.Zero, value))
+                {
                     throw new ArgumentException("The U vector can not be the zero vector.", nameof(value));
+                }
 
                 this.uvector = Vector2.Normalize(value);
             }
@@ -160,8 +184,10 @@ namespace netDxf.Entities
             get { return this.vvector; }
             set
             {
-                if(Vector2.Equals(Vector2.Zero, value))
+                if (Vector2.Equals(Vector2.Zero, value))
+                {
                     throw new ArgumentException("The V vector can not be the zero vector.", nameof(value));
+                }
 
                 this.vvector = Vector2.Normalize(value);
             }
@@ -176,7 +202,9 @@ namespace netDxf.Entities
             set
             {
                 if (value <= 0)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), value, "The Image height must be greater than zero.");
+                }
                 this.height = value;
             }
         }
@@ -190,7 +218,9 @@ namespace netDxf.Entities
             set
             {
                 if (value <= 0)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), value, "The Image width must be greater than zero.");
+                }
                 this.width = value;
             }
         }
@@ -204,12 +234,9 @@ namespace netDxf.Entities
             get
             {
                 return Vector2.Angle(this.uvector) * MathHelper.RadToDeg;
-                //return this.rotation;
             }
             set
             {
-                //this.rotation = MathHelper.NormalizeAngle(value);
-
                 List<Vector2> uv = MathHelper.Transform(new List<Vector2> { this.uvector, this.vvector },
                     MathHelper.NormalizeAngle(value) * MathHelper.DegToRad,
                     CoordinateSystem.Object, CoordinateSystem.World);
@@ -224,7 +251,14 @@ namespace netDxf.Entities
         public ImageDefinition Definition
         {
             get { return this.imageDefinition; }
-            internal set { this.imageDefinition = value; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+                this.imageDefinition = this.OnImageDefinitionChangedEvent(this.imageDefinition, value);
+            }
         }
 
         /// <summary>
@@ -245,7 +279,9 @@ namespace netDxf.Entities
             set
             {
                 if (value < 0 && value > 100)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Accepted brightness values range from 0 to 100.");
+                }
                 this.brightness = value;
             }
         }
@@ -259,7 +295,9 @@ namespace netDxf.Entities
             set
             {
                 if (value < 0 && value > 100)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Accepted contrast values range from 0 to 100.");
+                }
                 this.contrast = value;
             }
         }
@@ -273,7 +311,9 @@ namespace netDxf.Entities
             set
             {
                 if (value < 0 && value > 100)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Accepted fade values range from 0 to 100.");
+                }
                 this.fade = value;
             }
         }
@@ -396,7 +436,9 @@ namespace netDxf.Entities
             };
 
             foreach (XData data in this.XData.Values)
+            {
                 entity.XData.Add((XData) data.Clone());
+            }
 
             return entity;
         }

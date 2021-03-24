@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 
@@ -75,36 +76,46 @@ namespace netDxf.IO
         public void Next()
         {
             string readCode = this.reader.ReadLine();
-            this.currentPosition += 1;
-            if (!short.TryParse(readCode, NumberStyles.Integer, CultureInfo.InvariantCulture, out this.code))
-                throw new Exception(string.Format("Code {0} not valid at line {1}", this.code, this.currentPosition));
-            this.value = this.ReadValue(this.reader.ReadLine());
-            this.currentPosition += 1;
+            if (readCode == null)
+            {
+                this.code = 0;
+                this.value = DxfObjectCode.EndOfFile;
+            }
+            else
+            {
+                this.currentPosition += 1;
+                if (!short.TryParse(readCode, NumberStyles.Integer, CultureInfo.InvariantCulture, out this.code))
+                {
+                    throw new Exception(string.Format("Code {0} not valid at line {1}", this.code, this.currentPosition));
+                }
+                this.value = this.ReadValue(this.reader.ReadLine());
+                this.currentPosition += 1;
+            }
         }
 
         public byte ReadByte()
         {
-            return (byte)this.value;
+            return (byte) this.value;
         }
 
         public byte[] ReadBytes()
         {
-            return (byte[])this.value;
+            return (byte[]) this.value;
         }
 
         public short ReadShort()
         {
-            return (short)this.value;
+            return (short) this.value;
         }
 
         public int ReadInt()
         {
-            return (int)this.value;
+            return (int) this.value;
         }
 
         public long ReadLong()
         {
-            return (long)this.value;
+            return (long) this.value;
         }
 
         public bool ReadBool()
@@ -114,17 +125,17 @@ namespace netDxf.IO
 
         public double ReadDouble()
         {
-            return (double)this.value;
+            return (double) this.value;
         }
 
         public string ReadString()
         {
-            return (string)this.value;
+            return (string) this.value;
         }
 
         public string ReadHex()
         {
-            return (string)this.value;
+            return (string) this.value;
         }
 
         public override string ToString()
@@ -307,7 +318,7 @@ namespace netDxf.IO
                 return this.ReadInt(valueString);
             }
 
-            throw new Exception(string.Format("Code {0} not valid at line {1}", this.code, this.currentPosition));
+            throw new Exception(string.Format("Code \"{0}\" not valid at line {1}", this.code, this.currentPosition));
         }
 
         private byte ReadByte(string valueString)
@@ -318,7 +329,9 @@ namespace netDxf.IO
                 return result;
             }
 
-            throw new Exception(string.Format("Value {0} not valid at line {1}", valueString, this.currentPosition));
+            Debug.Assert(false, string.Format("Value \"{0}\" not valid at line {1}", valueString, this.currentPosition));
+
+            return 0;
         }
 
         private byte[] ReadBytes(string valueString)
@@ -334,7 +347,9 @@ namespace netDxf.IO
                 }
                 else
                 {
-                    throw new Exception(string.Format("Value {0} not valid at line {1}", hex, this.currentPosition));
+                    Debug.Assert(false, string.Format("Value \"{0}\" not valid at line {1}", valueString, this.currentPosition));
+
+                    return new byte[0];
                 }
             }
 
@@ -349,7 +364,9 @@ namespace netDxf.IO
                 return result;
             }
 
-            throw new Exception(string.Format("Value {0} not valid at line {1}", valueString, this.currentPosition));
+            Debug.Assert(false, string.Format("Value \"{0}\" not valid at line {1}", valueString, this.currentPosition));
+
+            return 0;
         }
 
         private int ReadInt(string valueString)
@@ -360,7 +377,9 @@ namespace netDxf.IO
                 return result;
             }
 
-            throw new Exception(string.Format("Value {0} not valid at line {1}", valueString, this.currentPosition));
+            Debug.Assert(false, string.Format("Value \"{0}\" not valid at line {1}", valueString, this.currentPosition));
+
+            return 0;
         }
 
         private long ReadLong(string valueString)
@@ -371,13 +390,22 @@ namespace netDxf.IO
                 return result;
             }
 
-            throw new Exception(string.Format("Value {0} not valid at line {1}", valueString, this.currentPosition));
+            Debug.Assert(false, string.Format("Value \"{0}\" not valid at line {1}", valueString, this.currentPosition));
+
+            return 0;
         }
 
         private bool ReadBool(string valueString)
         {
-            byte result = this.ReadByte(valueString);
-            return result > 0;
+            byte result;
+            if (byte.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
+            {
+                return result > 0;
+            }
+
+            Debug.Assert(false, string.Format("Value \"{0}\" not valid at line {1}", valueString, this.currentPosition));
+
+            return false;
         }
 
         private double ReadDouble(string valueString)
@@ -388,7 +416,9 @@ namespace netDxf.IO
                 return result;
             }
 
-            throw new Exception(string.Format("Value {0} not valid at line {1}", valueString, this.currentPosition));
+            Debug.Assert(false, string.Format("Value \"{0}\" not valid at line {1}", valueString, this.currentPosition));
+
+            return 0.0;
         }
 
         private string ReadString(string valueString)
@@ -398,13 +428,15 @@ namespace netDxf.IO
 
         private string ReadHex(string valueString)
         {
-            long test;
-            if (long.TryParse(valueString, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out test))
+            long result;
+            if (long.TryParse(valueString, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result))
             {
-                return test.ToString("X");
+                return result.ToString("X");
             }
 
-            throw new Exception(string.Format("Value {0} not valid at line {1}", valueString, this.currentPosition));
+            Debug.Assert(false, string.Format("Value \"{0}\" not valid at line {1}", valueString, this.currentPosition));
+
+            return string.Empty;
         }
 
         #endregion

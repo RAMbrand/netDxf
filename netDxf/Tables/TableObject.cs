@@ -1,7 +1,7 @@
-﻿#region netDxf library, Copyright (C) 2009-2019 Daniel Carvajal (haplokuon@gmail.com)
+﻿#region netDxf library, Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 
 //                        netDxf library
-// Copyright (C) 2009-2019 Daniel Carvajal (haplokuon@gmail.com)
+// Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 // 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,6 @@
 
 using System;
 using System.Linq;
-using netDxf.Collections;
 
 namespace netDxf.Tables
 {
@@ -31,7 +30,6 @@ namespace netDxf.Tables
     /// </summary>
     public abstract class TableObject :
         DxfObject,
-        IHasXData,
         ICloneable,
         IComparable,
         IComparable<TableObject>,
@@ -51,22 +49,6 @@ namespace netDxf.Tables
             }
         }
 
-        public event XDataAddAppRegEventHandler XDataAddAppReg;
-        protected virtual void OnXDataAddAppRegEvent(ApplicationRegistry item)
-        {
-            XDataAddAppRegEventHandler ae = this.XDataAddAppReg;
-            if (ae != null)
-                ae(this, new ObservableCollectionEventArgs<ApplicationRegistry>(item));
-        }
-
-        public event XDataRemoveAppRegEventHandler XDataRemoveAppReg;
-        protected virtual void OnXDataRemoveAppRegEvent(ApplicationRegistry item)
-        {
-            XDataRemoveAppRegEventHandler ae = this.XDataRemoveAppReg;
-            if (ae != null)
-                ae(this, new ObservableCollectionEventArgs<ApplicationRegistry>(item));
-        }
-
         #endregion
 
         #region private fields
@@ -74,7 +56,6 @@ namespace netDxf.Tables
         private static readonly char[] invalidCharacters = { '\\', '/', ':', '*', '?', '"', '<', '>', '|', ';', ',', '=', '`' };
         private bool reserved;
         private string name;
-        private readonly XDataDictionary xData;
 
         #endregion
 
@@ -92,14 +73,13 @@ namespace netDxf.Tables
             if (checkName)
             {
                 if (!IsValidName(name))
+                {
                     throw new ArgumentException("The name should be at least one character long and the following characters \\<>/?\":;*|,=` are not supported.", nameof(name));
+                }
             }
 
             this.name = name;
             this.reserved = false;
-            this.xData = new XDataDictionary();
-            this.xData.AddAppReg += this.XData_AddAppReg;
-            this.xData.RemoveAppReg += this.XData_RemoveAppReg;
         }
 
         #endregion
@@ -133,14 +113,6 @@ namespace netDxf.Tables
             get { return invalidCharacters.ToArray(); }
         }
 
-        /// <summary>
-        /// Gets the table <see cref="XDataDictionary">extended data</see>.
-        /// </summary>
-        public XDataDictionary XData
-        {
-            get { return this.xData; }
-        }
-
         #endregion
 
         #region public methods
@@ -153,7 +125,9 @@ namespace netDxf.Tables
         public static bool IsValidName(string name)
         {
             if (string.IsNullOrEmpty(name))
+            {
                 return false;
+            }
 
             return name.IndexOfAny(invalidCharacters) == -1;
         }
@@ -169,14 +143,27 @@ namespace netDxf.Tables
         internal void SetName(string newName, bool checkName)
         {
             if (string.IsNullOrEmpty(newName))
+            {
                 throw new ArgumentNullException(nameof(newName));
+            }
+
             if (this.IsReserved)
+            {
                 throw new ArgumentException("Reserved table objects cannot be renamed.", nameof(newName));
+            }
+
             if (string.Equals(this.name, newName, StringComparison.OrdinalIgnoreCase))
+            {
                 return;
+            }
+
             if (checkName)
+            {
                 if (!IsValidName(newName))
+                {
                     throw new ArgumentException("The following characters \\<>/?\":;*|,=` are not supported for table object names.", nameof(newName));
+                }
+            }
             this.OnNameChangedEvent(this.name, newName);
             this.name = newName;
         }
@@ -226,7 +213,9 @@ namespace netDxf.Tables
         public int CompareTo(TableObject other)
         {
             if (other == null)
+            {
                 throw new ArgumentNullException(nameof(other));
+            }
 
             return this.GetType() == other.GetType() ? string.Compare(this.Name, other.Name, StringComparison.OrdinalIgnoreCase) : 0;
         }
@@ -313,15 +302,19 @@ namespace netDxf.Tables
         /// <returns>True if two TableObject are equal or false in any other case.</returns>
         /// <remarks>
         /// Two TableObjects are considered equals if their names are the same, regardless of their internal values.
-        /// This is done this way because in a dxf two TableObjects cannot have the same name.
+        /// This is done this way because in a DXF two TableObjects cannot have the same name.
         /// </remarks>
         public override bool Equals(object other)
         {
             if (other == null)
+            {
                 return false;
+            }
 
             if (this.GetType() != other.GetType())
+            {
                 return false;
+            }
 
             return this.Equals((TableObject) other);
         }
@@ -333,12 +326,14 @@ namespace netDxf.Tables
         /// <returns>True if two TableObject are equal or false in any other case.</returns>
         /// <remarks>
         /// Two TableObjects are considered equals if their names are the same, regardless of their internal values.
-        /// This is done this way because in a dxf two TableObjects cannot have the same name.
+        /// This is done this way because in a DXF two TableObjects cannot have the same name.
         /// </remarks>
         public bool Equals(TableObject other)
         {
             if (other == null)
+            {
                 return false;
+            }
 
             return string.Equals(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
         }
@@ -362,18 +357,5 @@ namespace netDxf.Tables
 
         #endregion
 
-        #region XData events
-
-        private void XData_AddAppReg(XDataDictionary sender, ObservableCollectionEventArgs<ApplicationRegistry> e)
-        {
-            this.OnXDataAddAppRegEvent(e.Item);
-        }
-
-        private void XData_RemoveAppReg(XDataDictionary sender, ObservableCollectionEventArgs<ApplicationRegistry> e)
-        {
-            this.OnXDataRemoveAppRegEvent(e.Item);
-        }
-
-        #endregion
     }
 }

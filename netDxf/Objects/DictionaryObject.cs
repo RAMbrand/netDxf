@@ -1,7 +1,7 @@
-﻿#region netDxf library, Copyright (C) 2009-2018 Daniel Carvajal (haplokuon@gmail.com)
+﻿#region netDxf library, Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 
 //                        netDxf library
-// Copyright (C) 2009-2018 Daniel Carvajal (haplokuon@gmail.com)
+// Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 // 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -37,10 +37,10 @@ namespace netDxf.Objects
 
         #region private fields
 
-        internal DictionaryObject(DxfObject owner)
+        public DictionaryObject(DxfObject owner)
             : base(DxfObjectCode.Dictionary)
         {
-            this.isHardOwner = false;
+            this.isHardOwner = true;
             this.cloning = DictionaryCloningFlags.KeepExisting;
             this.entries = new Dictionary<string, string>();
             this.Owner = owner;

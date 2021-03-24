@@ -1,7 +1,7 @@
-﻿#region netDxf library, Copyright (C) 2009-2018 Daniel Carvajal (haplokuon@gmail.com)
+﻿#region netDxf library, Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 
 //                        netDxf library
-// Copyright (C) 2009-2018 Daniel Carvajal (haplokuon@gmail.com)
+// Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 // 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -193,6 +193,11 @@ namespace netDxf
         public const string UnderlayPdfDefinitionDictionary = "ACAD_PDFDEFINITIONS";
 
         /// <summary>
+        /// Layer states dictionary.
+        /// </summary>
+        public const string LayerStates = "ACAD_LAYERSTATES";
+
+        /// <summary>
         /// End of file.
         /// </summary>
         public const string EndOfFile = "EOF";
@@ -285,7 +290,7 @@ namespace netDxf
         /// <summary>
         /// Lightweight polyline.
         /// </summary>
-        public const string LightWeightPolyline = "LWPOLYLINE";
+        public const string LwPolyline = "LWPOLYLINE";
 
         /// <summary>
         /// Circle.
@@ -446,6 +451,11 @@ namespace netDxf
         /// Dictionary.
         /// </summary>
         public const string Dictionary = "DICTIONARY";
+
+        /// <summary>
+        /// XRecord.
+        /// </summary>
+        public const string XRecord = "XRECORD";
 
         /// <summary>
         /// Raster image.

@@ -1,7 +1,7 @@
-#region netDxf library, Copyright (C) 2009-2018 Daniel Carvajal (haplokuon@gmail.com)
+#region netDxf library, Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 
 //                        netDxf library
-// Copyright (C) 2009-2018 Daniel Carvajal (haplokuon@gmail.com)
+// Copyright (C) 2009-2020 Daniel Carvajal (haplokuon@gmail.com)
 // 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,6 @@ namespace netDxf.Collections
     {
         #region private fields
 
-        private int maxCapacity = int.MaxValue;
         protected readonly Dictionary<string, T> list;
         protected Dictionary<string, List<DxfObject>> references;
 
@@ -53,9 +52,13 @@ namespace netDxf.Collections
             this.Owner = document;
 
             if (string.IsNullOrEmpty(handle))
+            {
                 this.Owner.NumHandles = base.AssignHandle(this.Owner.NumHandles);
+            }
             else
+            {
                 this.Handle = handle;
+            }
 
             this.Owner.AddedObjects.Add(this.Handle, this);
         }
@@ -104,18 +107,6 @@ namespace netDxf.Collections
         }
 
         /// <summary>
-        /// Gets the maximum number of objects the collection can hold.
-        /// </summary>
-        /// <remarks>
-        /// This is an approximate value, the actual exact value is unknown. In any case is not recommended to get even close to this number for any practical use.
-        /// </remarks>
-        public int MaxCapacity
-        {
-            get { return this.maxCapacity; }
-            internal set { this.maxCapacity = value; }
-        }
-
-        /// <summary>
         /// Gets the owner of the actual DXF object.
         /// </summary>
         public new DxfDocument Owner
@@ -152,7 +143,10 @@ namespace netDxf.Collections
         public List<DxfObject> GetReferences(string name)
         {
             if (!this.Contains(name))
+            {
                 return new List<DxfObject>();
+            }
+
             return new List<DxfObject>(this.references[name]);
         }
 
@@ -168,7 +162,10 @@ namespace netDxf.Collections
         public List<DxfObject> GetReferences(T item)
         {
             if (item == null)
+            {
                 throw new ArgumentNullException(nameof(item));
+            }
+
             return this.GetReferences(item.Name);
         }
 
@@ -215,7 +212,10 @@ namespace netDxf.Collections
         public T Add(T item)
         {
             if (item == null)
+            {
                 throw new ArgumentNullException(nameof(item));
+            }
+
             return this.Add(item, true);
         }
 
@@ -245,7 +245,9 @@ namespace netDxf.Collections
             string[] names = new string[this.list.Count];
             this.list.Keys.CopyTo(names, 0);
             foreach (string o in names)
+            {
                 this.Remove(o);
+            }
         }
 
         #endregion
